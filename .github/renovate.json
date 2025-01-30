@@ -5,12 +5,55 @@
     "github>sanity-io/renovate-config:studio-v3",
     ":reviewer(team:ecosystem)"
   ],
+  "baseBranches": ["$default", "canary"],
   "packageRules": [
     {
-      "matchDepTypes": ["peerDependencies"],
-      "matchPackageNames": ["@sanity/client"],
+      "group": {"semanticCommitType": "chore"},
+      "matchDepTypes": [
+        "dependencies",
+        "devDependencies",
+        "engines",
+        "optionalDependencies",
+        "peerDependencies"
+      ],
+      "matchManagers": ["npm"],
+      "semanticCommitType": "chore",
+      "description": "Group all dependencies from the app directory",
+      "matchFileNames": ["apps/**/package.json"],
+      "groupName": "App dependencies"
+    },
+    {
+      "matchDepTypes": ["dependencies", "peerDependencies"],
+      "matchPackageNames": [
+        "@sanity/client",
+        "@sanity/icons",
+        "@sanity/preview-kit",
+        "@sanity/preview-url-secret",
+        "@sanity/ui",
+        "@sanity/types",
+        "@sanity/webhook",
+        "@portabletext/react",
+        "@portabletext/types",
+        "groq",
+        "sanity"
+      ],
       "rangeStrategy": "bump",
+      "matchFileNames": ["packages/next-sanity/package.json"],
       "semanticCommitType": "fix"
+    },
+    {
+      "matchDepNames": ["next", "@next/bundle-analyzer", "@next/env", "eslint-config-next"],
+      "matchFileNames": ["package.json"],
+      "followTag": "canary"
+    },
+    {
+      "matchDepNames": ["react", "react-dom", "react-is"],
+      "matchFileNames": ["apps/mvp/package.json", "apps/static/package.json"],
+      "followTag": "rc"
+    },
+    {
+      "matchDepNames": ["babel-plugin-react-compiler", "eslint-plugin-react-compiler"],
+      "followTag": "beta"
     }
   ],
   "ignorePresets": [":ignoreModulesAndTests", "github>sanity-io/renovate-config:group-non-major"]
