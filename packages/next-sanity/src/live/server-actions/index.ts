@@ -7,6 +7,9 @@ import {cookies, draftMode} from 'next/headers'
 
 import {sanitizePerspective} from '#live/sanitizePerspective'
 
+/**
+ * @internal CAUTION: this is an internal action and does not follow semver. Using it directly is at your own risk.
+ */
 export async function revalidateSyncTags(tags: SyncTag[]): Promise<void> {
   const {isEnabled: isDraftMode} = await draftMode()
 
@@ -31,6 +34,9 @@ export async function revalidateSyncTags(tags: SyncTag[]): Promise<void> {
   )
 }
 
+/**
+ * @internal CAUTION: this is an internal action and does not follow semver. Using it directly is at your own risk.
+ */
 export async function setPerspectiveCookie(perspective: ClientPerspective): Promise<void> {
   if (!(await draftMode()).isEnabled) {
     // throw new Error('Draft mode is not enabled, setting perspective cookie is not allowed')

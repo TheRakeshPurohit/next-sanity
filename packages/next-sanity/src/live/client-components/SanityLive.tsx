@@ -22,9 +22,6 @@ const RefreshOnMount = dynamic(() => import('./RefreshOnMount'))
 const RefreshOnInterval = dynamic(() => import('./RefreshOnInterval'))
 const RefreshOnReconnect = dynamic(() => import('./RefreshOnReconnect'))
 
-/**
- * @public
- */
 export interface SanityLiveProps extends Pick<
   InitializedClientConfig,
   | 'projectId'
@@ -37,43 +34,17 @@ export interface SanityLiveProps extends Pick<
 > {
   draftModeEnabled: boolean
   draftModePerspective?: ClientPerspective
-  refreshOnMount?: boolean
-  refreshOnFocus?: boolean
-  refreshOnReconnect?: boolean
   requestTag: string | undefined
+  waitFor?: 'function'
+
+  revalidateSyncTags?: (tags: SyncTag[]) => Promise<void | 'refresh'>
   onError?: (error: unknown) => void
   intervalOnGoAway?: number | false
   onGoAway?: (event: LiveEventGoAway, intervalOnGoAway: number | false) => void
-  revalidateSyncTags?: (tags: SyncTag[]) => Promise<void | 'refresh'>
-  waitFor?: 'function'
-}
 
-function handleError(error: unknown) {
-  if (isCorsOriginError(error)) {
-    console.warn(
-      `Sanity Live is unable to connect to the Sanity API as the current origin - ${window.origin} - is not in the list of allowed CORS origins for this Sanity Project.`,
-      error.addOriginUrl && `Add it here:`,
-      error.addOriginUrl?.toString(),
-    )
-  } else {
-    console.error(error)
-  }
-}
-
-function handleOnGoAway(event: LiveEventGoAway, intervalOnGoAway: number | false) {
-  if (intervalOnGoAway) {
-    console.warn(
-      'Sanity Live connection closed, switching to long polling set to a interval of',
-      intervalOnGoAway / 1000,
-      'seconds and the server gave this reason:',
-      event.reason,
-    )
-  } else {
-    console.error(
-      'Sanity Live connection closed, automatic revalidation is disabled, the server gave this reason:',
-      event.reason,
-    )
-  }
+  refreshOnMount?: boolean
+  refreshOnFocus?: boolean
+  refreshOnReconnect?: boolean
 }
 
 function SanityLive(props: SanityLiveProps): React.JSX.Element | null {
@@ -87,6 +58,14 @@ function SanityLive(props: SanityLiveProps): React.JSX.Element | null {
     requestTagPrefix,
     draftModeEnabled,
     draftModePerspective,
+    requestTag = 'next-loader.live',
+    waitFor,
+
+    revalidateSyncTags = defaultRevalidateSyncTags,
+    onError = handleError,
+    intervalOnGoAway = 30_000,
+    onGoAway = handleOnGoAway,
+
     refreshOnMount = false,
     refreshOnFocus = draftModeEnabled
       ? false
@@ -94,12 +73,6 @@ function SanityLive(props: SanityLiveProps): React.JSX.Element | null {
         ? true
         : window.self === window.top,
     refreshOnReconnect = true,
-    intervalOnGoAway = 30_000,
-    requestTag = 'next-loader.live',
-    onError = handleError,
-    onGoAway = handleOnGoAway,
-    revalidateSyncTags = defaultRevalidateSyncTags,
-    waitFor,
   } = props
 
   const client = useMemo(
@@ -117,6 +90,7 @@ function SanityLive(props: SanityLiveProps): React.JSX.Element | null {
       }),
     [apiHost, apiVersion, dataset, projectId, requestTagPrefix, token, useProjectHostname],
   )
+
   const [refreshOnInterval, setRefreshOnInterval] = useState<number | false>(false)
 
   /**
@@ -161,7 +135,6 @@ function SanityLive(props: SanityLiveProps): React.JSX.Element | null {
       .subscribe({
         next: handleLiveEvent,
         error: (err: unknown) => {
-          // console.error('What?', err)
           onError(err)
         },
       })
@@ -276,3 +249,31 @@ function SanityLive(props: SanityLiveProps): React.JSX.Element | null {
 SanityLive.displayName = 'SanityLiveClientComponent'
 
 export default SanityLive
+
+function handleError(error: unknown) {
+  if (isCorsOriginError(error)) {
+    console.warn(
+      `Sanity Live is unable to connect to the Sanity API as the current origin - ${window.origin} - is not in the list of allowed CORS origins for this Sanity Project.`,
+      error.addOriginUrl && `Add it here:`,
+      error.addOriginUrl?.toString(),
+    )
+  } else {
+    console.error(error)
+  }
+}
+
+function handleOnGoAway(event: LiveEventGoAway, intervalOnGoAway: number | false) {
+  if (intervalOnGoAway) {
+    console.warn(
+      'Sanity Live connection closed, switching to long polling set to a interval of',
+      intervalOnGoAway / 1000,
+      'seconds and the server gave this reason:',
+      event.reason,
+    )
+  } else {
+    console.error(
+      'Sanity Live connection closed, automatic revalidation is disabled, the server gave this reason:',
+      event.reason,
+    )
+  }
+}
