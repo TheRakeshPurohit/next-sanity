@@ -73,9 +73,6 @@ npx install-peerdeps --yarn next-sanity
 
 ## Migration guides
 
-> [!IMPORTANT]
-> You're looking at the README for v12, the README for [v11 is available here](https://github.com/sanity-io/next-sanity/tree/v11?tab=readme-ov-file#next-sanity) as well as a [migration guide][migrate-v11-to-v12].
-
 - [From `v11` to `v12`][migrate-v11-to-v12]
 - [From `v10` to `v11`][migrate-v10-to-v11]
 - [From `v9` to `v10`][migrate-v9-to-v10]
