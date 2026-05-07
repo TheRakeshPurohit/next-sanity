@@ -16,7 +16,7 @@ import type {LivePerspective} from '#live/types'
  * import {resolvePerspectiveFromCookies, type LivePerspective} from 'next-sanity/live'
  * import {sanityFetch, sanityFetchStaticParams} from '#sanity/live'
  *
- * export async function getStaticParams() {
+ * export async function generateStaticParams() {
  *   const query = defineQuery(`*[_type == "page" && defined(slug.current)]{"slug": slug.current}`)
  *   return await sanityFetchStaticParams({query})
  * }

@@ -9,7 +9,7 @@ The way it resolves it is by reading a cookie that is set by the `defineEnableDr
 
 The `resolvePerspectiveFromCookies` utility allows you to resolve the `perspective` in the same way so you can:
 
-- Instrument draft mode with a custom toolbar that lists out what perspectives is currently used to fetch data on the page.
+- Instrument draft mode with a custom toolbar that lists which perspectives are currently used to fetch data on the page.
 - Resolve `perspective` the same way in `cacheComponents: true` components, providing it as input to `'use cache'` boundaries that call `sanityFetch`.
 
 Here's how to call it the same way that `sanityFetch` does:
