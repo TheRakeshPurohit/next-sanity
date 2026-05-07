@@ -3,10 +3,9 @@ import type {NextConfig} from 'next'
 const nextConfig: NextConfig = {
   // basePath: process.env.NEXT_PUBLIC_TEST_BASE_PATH,
   // trailingSlash: true,
-  logging: {
-    fetches: {
-      fullUrl: false,
-    },
+  experimental: {
+    instantNavigationDevToolsToggle: true,
+    instantInsights: {validationLevel: 'warning'}
   },
   productionBrowserSourceMaps: true,
 }
