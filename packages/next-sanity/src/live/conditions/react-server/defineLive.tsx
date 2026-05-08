@@ -198,7 +198,7 @@ export function defineLive(config: DefineLiveOptions): {
           requestTagPrefix,
           token: shouldIncludeDrafts ? browserToken : undefined,
         }}
-        includeDrafts={shouldIncludeDrafts}
+        includeDrafts={shouldIncludeDrafts ? true : undefined}
         requestTag={requestTag}
         waitFor={shouldWaitFor}
         revalidateSyncTags={revalidateSyncTags}

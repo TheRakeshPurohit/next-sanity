@@ -10,7 +10,7 @@ import {RefreshOnInterval} from './RefreshOnInterval'
 
 export interface SanityLiveProps {
   config: SanityClientConfig
-  includeDrafts: boolean | undefined
+  includeDrafts: true | undefined
   requestTag: string
   waitFor?: 'function'
 
