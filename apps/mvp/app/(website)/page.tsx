@@ -11,6 +11,7 @@ const token = process.env.SANITY_API_READ_TOKEN!
 const {sanityFetch, SanityLive} = defineLive({
   client,
   serverToken: token,
+  // TDOO: setup experimental_taintUniqueValue here
   browserToken: token,
 })
 
