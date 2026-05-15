@@ -103,13 +103,13 @@ export function defineLive(config: DefineLiveOptions): {
     throw new Error('`client` is required for `defineLive` to function')
   }
 
-  if (process.env.NODE_ENV !== 'production' && !serverToken && serverToken !== false) {
+  if (process.env.NODE_ENV === 'development' && !serverToken && serverToken !== false) {
     console.warn(
       'No `serverToken` provided to `defineLive`. This means that only published content will be fetched and respond to live events. You can silence this warning by setting `serverToken: false`.',
     )
   }
 
-  if (process.env.NODE_ENV !== 'production' && !browserToken && browserToken !== false) {
+  if (process.env.NODE_ENV === 'development' && !browserToken && browserToken !== false) {
     console.warn(
       'No `browserToken` provided to `defineLive`. This means that live previewing drafts will only work when using the Presentation Tool in your Sanity Studio. To support live previewing drafts stand-alone, provide a `browserToken`. It is shared with the browser so it should only have Viewer rights or lower. You can silence this warning by setting `browserToken: false`.',
     )
@@ -127,22 +127,28 @@ export function defineLive(config: DefineLiveOptions): {
     perspective: _perspective,
     requestTag = 'next-loader.fetch',
   }) {
-    const stega = _stega ?? (studioUrlDefined && (await draftMode()).isEnabled)
-    const perspective = _perspective ?? (await resolveCookiePerspective())
+    const stega =
+      _stega ?? (serverToken && studioUrlDefined ? (await draftMode()).isEnabled : false)
+    const perspective =
+      _perspective ?? (serverToken ? await resolveCookiePerspective() : 'published')
     const useCdn = perspective === 'published'
     const revalidate = false
     const isBuildPhase = process.env['NEXT_PHASE'] === PHASE_PRODUCTION_BUILD
     const cacheMode = useCdn && !isBuildPhase ? 'noStale' : undefined
+    const token =
+      (perspective !== 'published' || stega) && serverToken ? serverToken : originalToken
 
     const {syncTags} = await client.fetch(query, await params, {
       filterResponse: false,
       perspective,
       stega: false,
+      resultSourceMap: false,
       returnQuery: false,
       next: {revalidate, tags: [...tags, `${cacheTagPrefix}fetch-sync-tags`]},
       useCdn,
       cacheMode,
       tag: [requestTag, 'fetch-sync-tags'].filter(Boolean).join('.'),
+      token,
     })
 
     const cacheTags = [...tags, ...(syncTags?.map((tag) => `${cacheTagPrefix}${tag}`) || [])]
@@ -151,18 +157,18 @@ export function defineLive(config: DefineLiveOptions): {
       filterResponse: false,
       perspective,
       stega,
-      token: perspective !== 'published' && serverToken ? serverToken : originalToken,
       next: {revalidate, tags: cacheTags},
       useCdn,
       cacheMode,
       tag: requestTag,
+      token,
     })
     return {data: result, sourceMap: resultSourceMap || null, tags: cacheTags}
   }
 
   const SanityLive: React.ComponentType<DefinedLiveProps> = async function SanityLive(props) {
     const {
-      includeDrafts = (await draftMode()).isEnabled,
+      includeDrafts = (typeof browserToken === 'string' && !!browserToken) ? (await draftMode()).isEnabled : false,
       requestTag = 'next-loader.live',
       waitFor,
 
