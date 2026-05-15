@@ -4,7 +4,6 @@ import type {
   ContentSourceMap,
   QueryParams,
   SanityClient,
-  SyncTag,
   InitializedClientConfig,
   LiveEvent,
 } from 'next-sanity'
@@ -82,16 +81,15 @@ export interface DefinedLiveProps {
   /**
    * Delays events until after a configured Sanity Function has processed them and called the callback endpoint.
    * When omitted, events are delivered immediately.
-   *
-   * @remarks
-   * When set, any custom `revalidateSyncTags` will not be called — revalidation is handled by the Function instead.
    */
   waitFor?: 'function'
   /**
-   * Override how cache tags are invalidated, you need to pass a server action here.
-   * You can also pass a `use client` function here, and have `router.refresh()` be called if the promise resolves to `'refresh'`.
+   * Server action called for each content-change message from the Live Content
+   * API.
+   *
+   * The default action revalidates the cache tags produced by `sanityFetch`.
    */
-  revalidateSyncTags?: (tags: SyncTag[]) => Promise<void | 'refresh'>
+  action?: SanityLiveAction
   /**
    * Custom error handler. If none is provided the error will be thrown during render and caught by the nearest React error boundary.
    */
@@ -166,6 +164,21 @@ export interface SanityLiveContext {
   waitFor: 'function' | undefined
 }
 
+/**
+ * Server action invoked when Sanity Live receives a content-change message.
+ *
+ * The argument is the list of cache tags derived from the Live Content API
+ * event. The default action revalidates those tags. Return `'refresh'` from a
+ * custom action to also call `router.refresh()` in the browser.
+ *
+ * There's three types of values you can give `action`:
+ * - 'use server'; export async function action() {}
+ * - 'use client'; export async function action() {}
+ * - 'refresh'
+ *
+ * If you give the string 'refresh', it's the same as if the action just `async () => 'refresh'`, which leads to <SanityLive /> calling `router.refresh()` for you
+ */
+export type SanityLiveAction = ((unsafeTags: unknown) => Promise<void | 'refresh'>) | 'refresh'
 /**
  * Handles connection, parsing, and event-processing errors.
  *

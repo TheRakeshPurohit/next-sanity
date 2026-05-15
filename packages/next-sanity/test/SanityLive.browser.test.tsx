@@ -17,8 +17,6 @@ import {test} from './helpers.browser'
 type OnRestartFn = Exclude<SanityLiveOnRestart, 'refresh'>
 type OnReconnectFn = Exclude<SanityLiveOnReconnect, 'refresh'>
 
-vi.mock('next-sanity/live/server-actions', () => ({revalidateSyncTags: vi.fn()}))
-
 // A stable spy that every `useRouter()` call shares so tests can assert  `router.refresh()` was invoked
 const refresh = vi.fn()
 const router = {
@@ -69,7 +67,7 @@ function defineSanityLiveClientComponent(
   const {apiHost, useProjectHostname, requestTagPrefix} = client.config()
   return (
     <SanityLiveClientComponent
-      revalidateSyncTags={async () => 'refresh'}
+      action="refresh"
       config={{
         projectId,
         dataset,
@@ -118,28 +116,35 @@ describe('SanityLiveClientComponent', () => {
     expect(onWelcome).toHaveBeenCalled()
   })
 
-  describe('revalidateSyncTags', () => {
+  describe('action', () => {
     const requestTag = 'mock.sends-live-event' satisfies SseMockTags
 
-    test(`revalidateSyncTags={async () => 'refresh'} triggers router.refresh()`, async () => {
-      await renderMock({revalidateSyncTags: async () => 'refresh', requestTag})
+    test(`action='refresh' triggers router.refresh()`, async () => {
+      await renderMock({action: 'refresh', requestTag})
       await vi.waitFor(() => expect(refresh).toHaveBeenCalled())
     })
 
-    test('revalidateSyncTags={fn} is called with unprefixed tags', async () => {
-      const revalidateSyncTags = vi.fn(async () => {})
-      await renderMock({revalidateSyncTags, requestTag})
-      await vi.waitFor(() => expect(revalidateSyncTags).toHaveBeenCalled())
-      expect(revalidateSyncTags.mock.lastCall).toMatchInlineSnapshot(`
+    test('action={fn} is called with prefixed tags', async () => {
+      const action = vi.fn(async () => {})
+      await renderMock({action, requestTag})
+      await vi.waitFor(() => expect(action).toHaveBeenCalled())
+      expect(action.mock.lastCall).toMatchInlineSnapshot(`
         [
           [
-            "s1:01cWIQ",
-            "s1:57Y4Uw",
-            "s1:EiHmwQ",
+            "sanity:s1:01cWIQ",
+            "sanity:s1:57Y4Uw",
+            "sanity:s1:EiHmwQ",
           ],
         ]
       `)
       expect(refresh).not.toHaveBeenCalled()
+    })
+
+    test(`action returning 'refresh' triggers router.refresh()`, async () => {
+      const action = vi.fn(async () => 'refresh' as const)
+      await renderMock({action, requestTag})
+      await vi.waitFor(() => expect(action).toHaveBeenCalled())
+      await vi.waitFor(() => expect(refresh).toHaveBeenCalled())
     })
   })
 

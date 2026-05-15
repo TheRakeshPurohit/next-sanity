@@ -5,6 +5,7 @@ export type {
   DefinedLiveProps,
   DefineLiveOptions,
   LivePerspective,
+  SanityLiveAction,
   SanityLiveContext,
   SanityLiveOnError,
   SanityLiveOnGoaway,
@@ -14,4 +15,5 @@ export type {
 } from '#live/types'
 
 export {isCorsOriginError} from '#live/isCorsOriginError'
+export {parseTags} from '#live/parseTags'
 export {resolvePerspectiveFromCookies} from '#live/resolvePerspectiveFromCookies'

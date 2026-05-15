@@ -94,6 +94,7 @@ export type {
   DefinedLiveProps,
   DefineLiveOptions,
   LivePerspective,
+  SanityLiveAction,
   SanityLiveContext,
   SanityLiveOnError,
   SanityLiveOnGoaway,
@@ -103,6 +104,7 @@ export type {
 } from '#live/types'
 
 export {isCorsOriginError} from '#live/isCorsOriginError'
+export {parseTags} from '#live/parseTags'
 
 /**
  * This helper is intended for use with Next.js Cache Components (`cacheComponents: true`),
